@@ -9,6 +9,16 @@ Stwórz aplikację w nestjs z jednym endpointem, który przyjmuje numer bloku i 
 
 ## Project setup
 
+**First creare .env file with PROVIDER_API_KEY env that contains provider API key from Infura!!**
+
+You can copy example .env file and change only PROVIDER_API_KEY:
+
+```bash
+cp .env.example .env
+```
+
+then run 
+
 ```bash
 $ npm install
 ```
