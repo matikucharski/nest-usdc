@@ -1,27 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ethers, EventLog } from 'ethers';
+import { ethers } from 'ethers';
 import { TransferInterface } from './interface/blockchain.interface';
-import { isEventLogWithArgs } from './utils';
 
-const USDC_ABI = [
+const TRANSFER_IFACE = new ethers.Interface([
   'event Transfer(address indexed from, address indexed to, uint256 value)'
-];
+]);
+const TRANSFER_TOPIC = TRANSFER_IFACE.getEvent('Transfer')!.topicHash;
 
 @Injectable()
 export class BlockchainService {
   private readonly provider: ethers.JsonRpcProvider;
-  private readonly usdc: ethers.Contract;
 
   constructor(private configService: ConfigService) {
     const rpcUrl = this.configService.get<string>('blockchain.rpcUrl')!;
-    console.log(rpcUrl);
     this.provider = new ethers.JsonRpcProvider(rpcUrl);
-    this.usdc = new ethers.Contract(
-      this.configService.get<string>('blockchain.usdcAddress')!,
-      USDC_ABI,
-      this.provider
-    );
   }
 
   async getUSDCTransactionsForBlock(
@@ -30,28 +23,34 @@ export class BlockchainService {
     if (blockNumber < 6307510) {
       return [];
     }
-    // const bn = await this.provider.getBlockNumber();
 
-    // provider.getLogs( returns raw data
-    // const logs = await this.provider.getLogs({
-    //   address: this.configService.get<string>('blockchain.usdcAddress'),
-    //   fromBlock: blockNumber,
-    //   toBlock: blockNumber
-    // });
+    // raw logs
+    const logs = await this.provider.getLogs({
+      address: this.configService.get<string>('blockchain.usdcAddress'),
+      topics: [TRANSFER_TOPIC],
+      fromBlock: blockNumber,
+      toBlock: blockNumber
+    });
 
-    // parsed logs with abi
-    const events = await this.usdc.queryFilter(
-      'Transfer',
-      blockNumber,
-      blockNumber
-    );
+    const results: TransferInterface[] = [];
+    for (const log of logs) {
+      try {
+        const decoded = TRANSFER_IFACE.decodeEventLog(
+          'Transfer',
+          log.data,
+          log.topics
+        );
+        results.push({
+          txHash: log.transactionHash,
+          from: decoded.from as string,
+          to: decoded.to as string,
+          value: (decoded.value as bigint).toString()
+        });
+      } catch {
+        // skip malformed logs - maybe log some info or count number of malformed logs
+      }
+    }
 
-    const validEvents = events.filter(isEventLogWithArgs); // filter out invalid events
-    return validEvents.map((event: EventLog) => ({
-      txHash: event.transactionHash,
-      from: event.args.from as string,
-      to: event.args.to as string,
-      value: (event.args.value as bigint).toString()
-    }));
+    return results;
   }
 }
