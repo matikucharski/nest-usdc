@@ -10,7 +10,7 @@ const TRANSFER_TOPIC = TRANSFER_IFACE.getEvent('Transfer')!.topicHash;
 
 @Injectable()
 export class BlockchainService {
-  private readonly provider: ethers.JsonRpcProvider;
+  readonly provider: ethers.JsonRpcProvider;
 
   constructor(private configService: ConfigService) {
     const rpcUrl = this.configService.get<string>('blockchain.rpcUrl')!;
@@ -20,6 +20,7 @@ export class BlockchainService {
   async getUSDCTransactionsForBlock(
     blockNumber: number
   ): Promise<TransferInterface[]> {
+    // don't waste time to get transfers for USDC before it existed :)
     if (blockNumber < 6307510) {
       return [];
     }
