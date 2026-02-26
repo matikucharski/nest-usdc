@@ -3,7 +3,6 @@ export default () => ({
   blockchain: {
     providerApiKey: process.env.PROVIDER_API_KEY,
     rpcUrl: process.env.RPC_URL! + process.env.PROVIDER_API_KEY!,
-    usdcAddress: process.env.USDC_ADDRESS!,
-    usdcABI: process.env.USDC_ABI!
+    usdcAddress: process.env.USDC_ADDRESS!
   }
 });
