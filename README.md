@@ -1,11 +1,9 @@
-# NestJS ETH.USDC transaction monitor
+# NestJS ETH.USDC transfers monitor
 ## Description
-
-
 
 Stwórz aplikację w nestjs z jednym endpointem, który przyjmuje numer bloku i zwraca wszystkie przesyły USDC, które wystąpiły w tym bloku na sieci Ethereum.
 
-[Nest](https://github.com/nestjs/nest) app with GET endpoint that fetches all USDC transactions for given block number on Ethereum blockchain.
+[Nest](https://github.com/nestjs/nest) app with */blockchain/usdc-transfers/:block (GET)* endpoint that fetches all USDC transfers for given block number on Ethereum blockchain.
 
 ## Project setup
 
